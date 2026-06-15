@@ -1,6 +1,6 @@
 // Nexis AI Tool — Side Panel Controller
 
-const NEXIS_API_BASE = "https://your-nexis-backend.repl.app/api";
+const NEXIS_API_BASE = "REPLACE_AFTER_BACKEND_DEPLOY";
 
 async function initSidePanel() {
   const body = document.getElementById("sp-body");

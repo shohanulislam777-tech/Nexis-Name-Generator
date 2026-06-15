@@ -5,7 +5,7 @@
   const NEXIS_API_BASE = (() => {
     // Production: replace with your deployed API URL
     // Development: proxied through background worker
-    return chrome.runtime.getManifest().nexis_api_url || "https://your-nexis-backend.repl.app/api";
+    return chrome.runtime.getManifest().nexis_api_url || "REPLACE_AFTER_BACKEND_DEPLOY";
   })();
 
   let _validating = false;

@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "cV0DYmCg08FtU8VZ5yy6s"
+uri = "file://extension/nexis-extension.zip"
+type = "unspecified"
+title = "nexis-extension.zip — Nexis Chrome Extension"

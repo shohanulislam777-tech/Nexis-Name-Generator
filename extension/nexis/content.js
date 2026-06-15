@@ -4,7 +4,7 @@
 (async function () {
   "use strict";
 
-  const NEXIS_API_BASE = "https://your-nexis-backend.repl.app/api";
+  const NEXIS_API_BASE = "REPLACE_AFTER_BACKEND_DEPLOY";
 
   // Check license status
   const state = await new Promise((resolve) => {
