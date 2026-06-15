@@ -1,0 +1,1 @@
+- [Nexis architecture](nexis-arch.md) — contract-first SaaS licensing platform; JWT is hand-rolled HMAC-SHA256; users are derived from license fields (no users table).

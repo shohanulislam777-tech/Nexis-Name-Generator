@@ -2,21 +2,41 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: API specification
+  version: 1.0.0
+  description: Nexis License System API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Admin authentication
+  - name: license-public
+    description: Public license validation endpoints (used by Chrome extension)
+  - name: admin-licenses
+    description: Admin license management
+  - name: admin-plans
+    description: Admin plan management
+  - name: admin-users
+    description: Admin user management
+  - name: admin-devices
+    description: Admin device management
+  - name: admin-notifications
+    description: Admin notifications
+  - name: admin-analytics
+    description: Admin analytics and dashboard stats
+  - name: admin-logs
+    description: Admin activity logs
+  - name: admin-settings
+    description: Admin settings
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +44,750 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Auth
+  # ─────────────────────────────────────────────────────────────────
+  /auth/login:
+    post:
+      operationId: adminLogin
+      tags: [auth]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: adminLogout
+      tags: [auth]
+      summary: Admin logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getAdminProfile
+      tags: [auth]
+      summary: Get current admin profile
+      responses:
+        "200":
+          description: Admin profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProfile"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Public License Endpoints (used by Chrome Extension)
+  # ─────────────────────────────────────────────────────────────────
+  /validate-license:
+    post:
+      operationId: validateLicense
+      tags: [license-public]
+      summary: Validate a license key and bind device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LicenseValidationInput"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LicenseValidationResponse"
+
+  /activate-license:
+    post:
+      operationId: activateLicense
+      tags: [license-public]
+      summary: Activate a license key on a device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LicenseActivationInput"
+      responses:
+        "200":
+          description: Activation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LicenseValidationResponse"
+
+  /deactivate-license:
+    post:
+      operationId: deactivateLicense
+      tags: [license-public]
+      summary: Deactivate a license key on a device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LicenseDeactivationInput"
+      responses:
+        "200":
+          description: Deactivation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /check-license:
+    post:
+      operationId: checkLicense
+      tags: [license-public]
+      summary: Heartbeat check — revalidates license on device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LicenseCheckInput"
+      responses:
+        "200":
+          description: Current license status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LicenseValidationResponse"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Admin — Licenses
+  # ─────────────────────────────────────────────────────────────────
+  /admin/licenses:
+    get:
+      operationId: listLicenses
+      tags: [admin-licenses]
+      summary: List all licenses
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: planId
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Paginated list of licenses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LicenseListResponse"
+    post:
+      operationId: createLicense
+      tags: [admin-licenses]
+      summary: Generate a new license
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LicenseInput"
+      responses:
+        "201":
+          description: Created license
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/License"
+
+  /admin/licenses/bulk-generate:
+    post:
+      operationId: bulkGenerateLicenses
+      tags: [admin-licenses]
+      summary: Bulk generate multiple licenses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkGenerateInput"
+      responses:
+        "201":
+          description: Generated licenses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/License"
+
+  /admin/licenses/export:
+    get:
+      operationId: exportLicenses
+      tags: [admin-licenses]
+      summary: Export licenses as CSV
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: CSV export
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /admin/licenses/{id}:
+    get:
+      operationId: getLicense
+      tags: [admin-licenses]
+      summary: Get a license by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: License details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LicenseDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateLicense
+      tags: [admin-licenses]
+      summary: Update a license
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LicenseUpdate"
+      responses:
+        "200":
+          description: Updated license
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/License"
+    delete:
+      operationId: deleteLicense
+      tags: [admin-licenses]
+      summary: Revoke and delete a license
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /admin/licenses/{id}/suspend:
+    post:
+      operationId: suspendLicense
+      tags: [admin-licenses]
+      summary: Suspend a license
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Suspended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/License"
+
+  /admin/licenses/{id}/activate:
+    post:
+      operationId: activateLicenseAdmin
+      tags: [admin-licenses]
+      summary: Re-activate a suspended license
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Activated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/License"
+
+  /admin/licenses/{id}/revoke:
+    post:
+      operationId: revokeLicense
+      tags: [admin-licenses]
+      summary: Revoke a license permanently
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/License"
+
+  /admin/licenses/{id}/renew:
+    post:
+      operationId: renewLicense
+      tags: [admin-licenses]
+      summary: Renew/extend a license
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenewInput"
+      responses:
+        "200":
+          description: Renewed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/License"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Admin — Plans
+  # ─────────────────────────────────────────────────────────────────
+  /admin/plans:
+    get:
+      operationId: listPlans
+      tags: [admin-plans]
+      summary: List all plans
+      responses:
+        "200":
+          description: Plans list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plan"
+    post:
+      operationId: createPlan
+      tags: [admin-plans]
+      summary: Create a plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanInput"
+      responses:
+        "201":
+          description: Created plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+
+  /admin/plans/{id}:
+    get:
+      operationId: getPlan
+      tags: [admin-plans]
+      summary: Get a plan by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+    put:
+      operationId: updatePlan
+      tags: [admin-plans]
+      summary: Update a plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanUpdate"
+      responses:
+        "200":
+          description: Updated plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+    delete:
+      operationId: deletePlan
+      tags: [admin-plans]
+      summary: Delete a plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Admin — Users
+  # ─────────────────────────────────────────────────────────────────
+  /admin/users:
+    get:
+      operationId: listUsers
+      tags: [admin-users]
+      summary: List users (license holders)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Users list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListResponse"
+
+  /admin/users/{id}:
+    get:
+      operationId: getUser
+      tags: [admin-users]
+      summary: Get user details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetail"
+    delete:
+      operationId: deleteUser
+      tags: [admin-users]
+      summary: Delete a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Admin — Devices
+  # ─────────────────────────────────────────────────────────────────
+  /admin/devices:
+    get:
+      operationId: listDevices
+      tags: [admin-devices]
+      summary: List all registered devices
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: licenseId
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Devices list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceListResponse"
+
+  /admin/devices/{id}:
+    delete:
+      operationId: deleteDevice
+      tags: [admin-devices]
+      summary: Remove a device binding
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Admin — Notifications
+  # ─────────────────────────────────────────────────────────────────
+  /admin/notifications:
+    get:
+      operationId: listNotifications
+      tags: [admin-notifications]
+      summary: List notifications
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Notifications list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationListResponse"
+    post:
+      operationId: createNotification
+      tags: [admin-notifications]
+      summary: Create and broadcast a notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationInput"
+      responses:
+        "201":
+          description: Created notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Admin — Analytics
+  # ─────────────────────────────────────────────────────────────────
+  /admin/analytics/dashboard:
+    get:
+      operationId: getDashboardStats
+      tags: [admin-analytics]
+      summary: Get dashboard summary statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /admin/analytics/trends:
+    get:
+      operationId: getActivationTrends
+      tags: [admin-analytics]
+      summary: Get license activation trends (last 30 days)
+      responses:
+        "200":
+          description: Activation trends
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrendPoint"
+
+  /admin/analytics/revenue:
+    get:
+      operationId: getRevenueSummary
+      tags: [admin-analytics]
+      summary: Get revenue summary by plan
+      responses:
+        "200":
+          description: Revenue by plan
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RevenuePlanPoint"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Admin — Activity Logs
+  # ─────────────────────────────────────────────────────────────────
+  /admin/activity-logs:
+    get:
+      operationId: listActivityLogs
+      tags: [admin-logs]
+      summary: List activity logs
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: licenseId
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Activity logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityLogListResponse"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Admin — Settings
+  # ─────────────────────────────────────────────────────────────────
+  /admin/settings:
+    get:
+      operationId: getSettings
+      tags: [admin-settings]
+      summary: Get admin settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+    put:
+      operationId: updateSettings
+      tags: [admin-settings]
+      summary: Update settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+
+# ─────────────────────────────────────────────────────────────────
+# Component Schemas
+# ─────────────────────────────────────────────────────────────────
 components:
   schemas:
     HealthStatus:
@@ -31,6 +795,627 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success]
+
+    # ── Auth ──────────────────────────────────────────────────────
+    LoginInput:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        admin:
+          $ref: "#/components/schemas/AdminProfile"
+      required: [token, admin]
+
+    AdminProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        createdAt:
+          type: string
+      required: [id, username, email, createdAt]
+
+    # ── License Public ─────────────────────────────────────────────
+    LicenseValidationInput:
+      type: object
+      properties:
+        license_key:
+          type: string
+        device_id:
+          type: string
+        device_info:
+          type: ["object", "null"]
+          additionalProperties: true
+      required: [license_key, device_id]
+
+    LicenseActivationInput:
+      type: object
+      properties:
+        license_key:
+          type: string
+        device_id:
+          type: string
+        device_info:
+          type: ["object", "null"]
+          additionalProperties: true
+      required: [license_key, device_id]
+
+    LicenseDeactivationInput:
+      type: object
+      properties:
+        license_key:
+          type: string
+        device_id:
+          type: string
+      required: [license_key, device_id]
+
+    LicenseCheckInput:
+      type: object
+      properties:
+        license_key:
+          type: string
+        device_id:
+          type: string
+      required: [license_key, device_id]
+
+    LicenseValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        message:
+          type: string
+        status:
+          type: ["string", "null"]
+        session_id:
+          type: ["string", "null"]
+        user_name:
+          type: ["string", "null"]
+        expires_at:
+          type: ["string", "null"]
+        activated_at:
+          type: ["string", "null"]
+        plan_name:
+          type: ["string", "null"]
+        max_devices:
+          type: ["integer", "null"]
+      required: [valid, message]
+
+    # ── License Admin ──────────────────────────────────────────────
+    License:
+      type: object
+      properties:
+        id:
+          type: integer
+        key:
+          type: string
+        status:
+          type: string
+          enum: [active, suspended, revoked, expired, trial]
+        planId:
+          type: ["integer", "null"]
+        planName:
+          type: ["string", "null"]
+        userName:
+          type: ["string", "null"]
+        userEmail:
+          type: ["string", "null"]
+        maxDevices:
+          type: integer
+        activatedDevices:
+          type: integer
+        expiresAt:
+          type: ["string", "null"]
+        activatedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        notes:
+          type: ["string", "null"]
+      required: [id, key, status, maxDevices, activatedDevices, createdAt]
+
+    LicenseDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        key:
+          type: string
+        status:
+          type: string
+        planId:
+          type: ["integer", "null"]
+        planName:
+          type: ["string", "null"]
+        userName:
+          type: ["string", "null"]
+        userEmail:
+          type: ["string", "null"]
+        maxDevices:
+          type: integer
+        activatedDevices:
+          type: integer
+        expiresAt:
+          type: ["string", "null"]
+        activatedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        notes:
+          type: ["string", "null"]
+        devices:
+          type: array
+          items:
+            $ref: "#/components/schemas/Device"
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityLog"
+      required: [id, key, status, maxDevices, activatedDevices, createdAt, devices, recentActivity]
+
+    LicenseInput:
+      type: object
+      properties:
+        planId:
+          type: ["integer", "null"]
+        userName:
+          type: ["string", "null"]
+        userEmail:
+          type: ["string", "null"]
+        maxDevices:
+          type: integer
+        expiresAt:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        isTrial:
+          type: boolean
+      required: [maxDevices]
+
+    LicenseUpdate:
+      type: object
+      properties:
+        status:
+          type: ["string", "null"]
+        planId:
+          type: ["integer", "null"]
+        userName:
+          type: ["string", "null"]
+        userEmail:
+          type: ["string", "null"]
+        maxDevices:
+          type: ["integer", "null"]
+        expiresAt:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+
+    BulkGenerateInput:
+      type: object
+      properties:
+        count:
+          type: integer
+        planId:
+          type: ["integer", "null"]
+        maxDevices:
+          type: integer
+        expiresAt:
+          type: ["string", "null"]
+        isTrial:
+          type: boolean
+      required: [count, maxDevices]
+
+    RenewInput:
+      type: object
+      properties:
+        expiresAt:
+          type: string
+      required: [expiresAt]
+
+    LicenseListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/License"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [data, total, page, limit]
+
+    # ── Plans ──────────────────────────────────────────────────────
+    Plan:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        price:
+          type: number
+        currency:
+          type: string
+        durationDays:
+          type: ["integer", "null"]
+        maxDevices:
+          type: integer
+        isActive:
+          type: boolean
+        licenseCount:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, name, price, currency, maxDevices, isActive, licenseCount, createdAt]
+
+    PlanInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        price:
+          type: number
+        currency:
+          type: string
+        durationDays:
+          type: ["integer", "null"]
+        maxDevices:
+          type: integer
+        isActive:
+          type: boolean
+      required: [name, price, maxDevices]
+
+    PlanUpdate:
+      type: object
+      properties:
+        name:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        price:
+          type: ["number", "null"]
+        currency:
+          type: ["string", "null"]
+        durationDays:
+          type: ["integer", "null"]
+        maxDevices:
+          type: ["integer", "null"]
+        isActive:
+          type: ["boolean", "null"]
+
+    # ── Users ──────────────────────────────────────────────────────
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        licenseCount:
+          type: integer
+        activeDevices:
+          type: integer
+        createdAt:
+          type: string
+        lastSeen:
+          type: ["string", "null"]
+      required: [id, licenseCount, activeDevices, createdAt]
+
+    UserDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        licenseCount:
+          type: integer
+        activeDevices:
+          type: integer
+        createdAt:
+          type: string
+        lastSeen:
+          type: ["string", "null"]
+        licenses:
+          type: array
+          items:
+            $ref: "#/components/schemas/License"
+        devices:
+          type: array
+          items:
+            $ref: "#/components/schemas/Device"
+      required: [id, licenseCount, activeDevices, createdAt, licenses, devices]
+
+    UserListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [data, total, page, limit]
+
+    # ── Devices ────────────────────────────────────────────────────
+    Device:
+      type: object
+      properties:
+        id:
+          type: integer
+        licenseId:
+          type: integer
+        deviceId:
+          type: string
+        deviceInfo:
+          type: ["object", "null"]
+          additionalProperties: true
+        firstSeen:
+          type: string
+        lastSeen:
+          type: string
+        isActive:
+          type: boolean
+      required: [id, licenseId, deviceId, firstSeen, lastSeen, isActive]
+
+    DeviceListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Device"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [data, total, page, limit]
+
+    # ── Notifications ──────────────────────────────────────────────
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+          enum: [info, warning, error, success]
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, title, message, type, isRead, createdAt]
+
+    NotificationInput:
+      type: object
+      properties:
+        title:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+          enum: [info, warning, error, success]
+      required: [title, message, type]
+
+    NotificationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [data, total, page, limit]
+
+    # ── Analytics ─────────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      properties:
+        totalLicenses:
+          type: integer
+        activeLicenses:
+          type: integer
+        suspendedLicenses:
+          type: integer
+        revokedLicenses:
+          type: integer
+        expiredLicenses:
+          type: integer
+        trialLicenses:
+          type: integer
+        totalDevices:
+          type: integer
+        activeDevices:
+          type: integer
+        totalPlans:
+          type: integer
+        totalUsers:
+          type: integer
+        totalRevenue:
+          type: number
+        recentActivations:
+          type: integer
+        activationsToday:
+          type: integer
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityLog"
+      required:
+        - totalLicenses
+        - activeLicenses
+        - suspendedLicenses
+        - revokedLicenses
+        - expiredLicenses
+        - trialLicenses
+        - totalDevices
+        - activeDevices
+        - totalPlans
+        - totalUsers
+        - totalRevenue
+        - recentActivations
+        - activationsToday
+        - recentActivity
+
+    TrendPoint:
+      type: object
+      properties:
+        date:
+          type: string
+        activations:
+          type: integer
+        validations:
+          type: integer
+        newLicenses:
+          type: integer
+      required: [date, activations, validations, newLicenses]
+
+    RevenuePlanPoint:
+      type: object
+      properties:
+        planName:
+          type: string
+        licenseCount:
+          type: integer
+        revenue:
+          type: number
+      required: [planName, licenseCount, revenue]
+
+    # ── Activity Log ──────────────────────────────────────────────
+    ActivityLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        action:
+          type: string
+        licenseId:
+          type: ["integer", "null"]
+        licenseKey:
+          type: ["string", "null"]
+        deviceId:
+          type: ["string", "null"]
+        adminId:
+          type: ["integer", "null"]
+        metadata:
+          type: ["object", "null"]
+          additionalProperties: true
+        createdAt:
+          type: string
+      required: [id, action, createdAt]
+
+    ActivityLogListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityLog"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [data, total, page, limit]
+
+    # ── Settings ─────────────────────────────────────────────────
+    Settings:
+      type: object
+      properties:
+        appName:
+          type: string
+        supportUrl:
+          type: ["string", "null"]
+        defaultMaxDevices:
+          type: integer
+        defaultTrialDays:
+          type: integer
+        requireDeviceBinding:
+          type: boolean
+        allowSelfDeactivation:
+          type: boolean
+        heartbeatIntervalMinutes:
+          type: integer
+      required:
+        - appName
+        - defaultMaxDevices
+        - defaultTrialDays
+        - requireDeviceBinding
+        - allowSelfDeactivation
+        - heartbeatIntervalMinutes
+
+    SettingsUpdate:
+      type: object
+      properties:
+        appName:
+          type: ["string", "null"]
+        supportUrl:
+          type: ["string", "null"]
+        defaultMaxDevices:
+          type: ["integer", "null"]
+        defaultTrialDays:
+          type: ["integer", "null"]
+        requireDeviceBinding:
+          type: ["boolean", "null"]
+        allowSelfDeactivation:
+          type: ["boolean", "null"]
+        heartbeatIntervalMinutes:
+          type: ["integer", "null"]

@@ -1,0 +1,241 @@
+I am uploading my previous Chrome Extension source code.
+
+I am the owner of this project and I want a complete next-generation rebuild.
+
+IMPORTANT:
+Do NOT stop after creating an admin panel.
+Do NOT stop after creating a backend.
+The final deliverable must include BOTH:
+
+1. Full Chrome Extension
+2. Full Nexus Admin Panel + Licensing Backend
+
+==================================================
+PHASE 1 — PROJECT ANALYSIS
+==================================================
+
+First analyze all uploaded files.
+
+Identify and document:
+
+- Extension architecture
+- Manifest version
+- Background scripts
+- Content scripts
+- Sidepanel/popup UI
+- Storage usage
+- Messaging system
+- APIs
+- Authentication flow
+- Licensing logic
+- Device binding logic
+- User workflows
+- All detected features
+
+Create a detailed rebuild plan before coding.
+
+==================================================
+PHASE 2 — REBUILD THE EXTENSION
+==================================================
+
+Rebuild the entire extension using a clean modern codebase.
+
+Requirements:
+
+- Preserve all functionality
+- Preserve workflows
+- Preserve automation behavior
+- Preserve extension settings
+- Preserve user experience
+
+Generate:
+
+- manifest.json
+- background scripts
+- content scripts
+- sidepanel
+- popup UI
+- options page
+- assets
+- icons
+- sounds
+- utility modules
+
+Use modern architecture and clean code.
+
+Support:
+
+- Chrome
+- Edge
+- Brave
+
+==================================================
+PHASE 3 — NEXUS LICENSE SYSTEM
+==================================================
+
+Create a complete enterprise license system.
+
+Features:
+
+- License activation
+- License validation
+- Device binding
+- Device limits
+- License expiration
+- License suspension
+- License revocation
+- License renewal
+- Trial licenses
+- Subscription plans
+
+API endpoints:
+
+POST /api/validate-license
+POST /api/activate-license
+POST /api/deactivate-license
+POST /api/device-bind
+POST /api/check-license
+
+Secure implementation only.
+
+==================================================
+PHASE 4 — ADMIN PANEL
+==================================================
+
+Create a professional SaaS admin dashboard.
+
+Pages:
+
+Dashboard
+Licenses
+Plans
+Users
+Devices
+Notifications
+Analytics
+Activity Logs
+Settings
+
+Admin features:
+
+- Generate licenses
+- Bulk generate licenses
+- Import licenses
+- Export licenses
+- Suspend licenses
+- Revoke licenses
+- Renew licenses
+- Create plans
+- Manage users
+- Manage devices
+- View logs
+- View analytics
+- Send notifications
+
+Dashboard must include:
+
+- Total Licenses
+- Active Licenses
+- Suspended Licenses
+- Revenue Metrics
+- Device Usage
+- Activation Trends
+- Activity Feed
+
+==================================================
+PHASE 5 — EXTENSION INTEGRATION
+==================================================
+
+Integrate Nexus directly into the extension.
+
+Requirements:
+
+On first launch:
+
+- Show license activation screen
+- Validate key with backend
+- Bind device automatically
+
+If license:
+
+- Expired
+- Suspended
+- Revoked
+
+Show proper status screen and disable premium functionality.
+
+Support automatic revalidation.
+
+==================================================
+PHASE 6 — DATABASE
+==================================================
+
+Create complete database schema.
+
+Tables:
+
+admins
+users
+licenses
+license_activations
+devices
+plans
+notifications
+settings
+activity_logs
+
+Generate migrations.
+
+==================================================
+PHASE 7 — SECURITY
+==================================================
+
+Implement:
+
+- JWT Authentication
+- Refresh Tokens
+- HttpOnly Cookies
+- CSRF Protection
+- Rate Limiting
+- Request Validation
+- Audit Logs
+- Environment Variables
+
+==================================================
+PHASE 8 — DEPLOYMENT
+==================================================
+
+Provide:
+
+- Frontend deployment
+- Backend deployment
+- Environment variables
+- Production build process
+- Database setup
+- Installation guide
+
+==================================================
+PHASE 9 — FINAL DELIVERY
+==================================================
+
+DO NOT SAY THE PROJECT IS COMPLETE UNTIL ALL OF THE FOLLOWING ARE GENERATED:
+
+1. Full Chrome Extension Source
+2. Full Admin Panel Source
+3. Full Backend Source
+4. Database Schema
+5. API Documentation
+6. Production Build Instructions
+7. Extension ZIP Build
+8. Folder Structure Documentation
+9. Deployment Instructions
+
+Before claiming completion, show:
+
+- Extension file tree
+- Backend file tree
+- Admin panel file tree
+- Build status
+- Remaining tasks
+
+Continue working until every module is implemented.
